@@ -1,24 +1,50 @@
-﻿using HtmlAgilityPack;
+﻿
+using PuppeteerSharp;
 
 namespace RegalAuctionsWebCrawler.Helpers
 {
     public class PageScraper
     {
         private readonly string _pageURL;
+
         public PageScraper(string pageURL)
         {
             _pageURL = pageURL;
+
+
         }
 
         public async Task InitializeAsync()
         {
-            HtmlWeb web = new();
-            HtmlDocument doc = web.Load(_pageURL);
+            LaunchOptions options = new()
+            {
+                Headless = true,
+                ExecutablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+            };
 
             try
             {
-                HtmlNode header = doc.GetElementbyId("header");
-                Console.WriteLine(header.ToString());
+                IBrowser browser = await Puppeteer.LaunchAsync(options, null);
+
+
+                using PuppeteerSharp.IPage page = await browser.NewPageAsync();
+                await page.GoToAsync(_pageURL);
+                //await page.ScreenshotAsync("Screenshot.jpg", new ScreenshotOptions { FullPage = true, Quality = 100 });
+
+
+                IElementHandle[] listings = await page.QuerySelectorAllAsync(".detail-box");
+                foreach (IElementHandle? item in listings)
+                {
+
+                    IJSHandle innerTextHandle = await item.GetPropertyAsync("innerText");
+                    object innerText = await innerTextHandle.JsonValueAsync();
+                    Console.WriteLine(innerText);
+                }
+
+
+
+                await browser.CloseAsync();
+
             }
             catch (Exception ex)
             {
@@ -30,6 +56,11 @@ namespace RegalAuctionsWebCrawler.Helpers
 
 
 
+        }
+        private static async Task ClickLinkWithSelectorAndWaitForSelector(Page page, string linkSelector, string waitForSelector)
+        {
+            await page.ClickAsync(linkSelector);
+            await page.WaitForSelectorAsync($"{waitForSelector}");
         }
     }
 }
