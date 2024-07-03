@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RegalAuctionsWebCrawler.Models
+﻿namespace RegalAuctionsWebCrawler.Models
 {
-    public class UnitTypeModel: BaseModel
+    public class UnitTypeModel : BaseModel
     {
- 
+
     }
 
     public static class UnitTypeModelFactory
     {
-        public static List<UnitTypeModel> GetUnitTypeModels()
+        public static List<BaseModel> GetUnitTypeModels()
         {
-            return new List<UnitTypeModel>
-        {
+            return
+        [
             new UnitTypeModel { Id = "unit_type-C", Value = "C", Label = "Car" },
             new UnitTypeModel { Id = "unit_type-T", Value = "T", Label = "Truck" },
             new UnitTypeModel { Id = "unit_type-U", Value = "U", Label = "Sport Utility" },
@@ -25,7 +19,7 @@ namespace RegalAuctionsWebCrawler.Models
             new UnitTypeModel { Id = "unit_type-EQ", Value = "EQ", Label = "Equipment" },
             new UnitTypeModel { Id = "unit_type-M", Value = "M", Label = "Power Sport" },
             new UnitTypeModel { Id = "unit_type-other", Value = "other", Label = "Other" }
-        };
+        ];
         }
     }
 

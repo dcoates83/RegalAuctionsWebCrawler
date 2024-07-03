@@ -1,6 +1,4 @@
 ﻿using RegalAuctionsWebCrawler.Models;
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Web;
 
@@ -11,18 +9,18 @@ public static class UrlHelper
     public static string GenerateInventoryUrl(
         int unitsPerPage = 100,
         int page = 1,
-        YearRangeModel yearRange = null,
-        OdometerRangeModel odometerRange = null,
-        List<BaseModel> unitTypes = null,
-        List<BaseModel> makes = null,
-        List<BaseModel> transmissions = null,
-        List<BaseModel> engines = null,
-        List<BaseModel> drivelines = null,
-        List<BaseModel> fuelTypes = null,
-        List<BaseModel> seats = null)
+        YearRangeModel? yearRange = null,
+        OdometerRangeModel? odometerRange = null,
+        List<BaseModel>? unitTypes = null,
+        List<BaseModel>? makes = null,
+        List<BaseModel>? transmissions = null,
+        List<BaseModel>? engines = null,
+        List<BaseModel>? drivelines = null,
+        List<BaseModel>? fuelTypes = null,
+        List<BaseModel>? seats = null)
     {
-        var url = string.Format(BaseUrl, unitsPerPage, page);
-        var queryParameters = HttpUtility.ParseQueryString(string.Empty);
+        string url = string.Format(BaseUrl, unitsPerPage, page);
+        NameValueCollection queryParameters = HttpUtility.ParseQueryString(string.Empty);
 
         if (yearRange != null)
         {
@@ -37,7 +35,7 @@ public static class UrlHelper
         }
 
         AddListToQueryParameters(queryParameters, "unit_type", unitTypes);
-        AddListToQueryParameters(queryParameters, "make", makes);
+        //AddListToQueryParameters(queryParameters, "make", makes);
         AddListToQueryParameters(queryParameters, "transmission", transmissions);
         AddListToQueryParameters(queryParameters, "engine", engines);
         AddListToQueryParameters(queryParameters, "driveline", drivelines);
@@ -54,7 +52,7 @@ public static class UrlHelper
     {
         if (models != null && models.Count > 0)
         {
-            foreach (var model in models)
+            foreach (BaseModel model in models)
             {
                 queryParameters.Add($"search[{key}][]", model.Value);
             }
@@ -63,8 +61,8 @@ public static class UrlHelper
 
     public static string ChangePageNumber(string url, int newPageNumber)
     {
-        var uriBuilder = new UriBuilder(url);
-        var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+        UriBuilder uriBuilder = new(url);
+        NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
         query.Set("page", newPageNumber.ToString());
         uriBuilder.Query = query.ToString();
         return uriBuilder.ToString();
