@@ -1,3 +1,4 @@
+using PuppeteerSharp;
 using RegalAuctionsWebCrawler.Helpers;
 using RegalAuctionsWebCrawler.Models;
 
@@ -42,8 +43,18 @@ namespace RegalAuctionsWebCrawler
 
 
 
-            PageScraper pageScraper = new(url);
-            await pageScraper.InitializeAsync();
+            PageScraper scraper = new(url);
+            ListingExtractor extractor = new();
+
+            IPage page = await scraper.InitializeAsync();
+            List<ListingModel> listingDetails = await extractor.GetListingDetailsAsync(page);
+
+            //foreach (string detail in listingDetails)
+            //{
+            //    Console.WriteLine(detail);
+            //}
+
+            await page.Browser.CloseAsync(); // Ensure the browser is closed after use
             host.Run();
 
         }

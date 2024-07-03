@@ -1,5 +1,4 @@
-﻿
-using PuppeteerSharp;
+﻿using PuppeteerSharp;
 
 namespace RegalAuctionsWebCrawler.Helpers
 {
@@ -10,11 +9,9 @@ namespace RegalAuctionsWebCrawler.Helpers
         public PageScraper(string pageURL)
         {
             _pageURL = pageURL;
-
-
         }
 
-        public async Task InitializeAsync()
+        public async Task<IPage> InitializeAsync()
         {
             LaunchOptions options = new()
             {
@@ -25,38 +22,18 @@ namespace RegalAuctionsWebCrawler.Helpers
             try
             {
                 IBrowser browser = await Puppeteer.LaunchAsync(options, null);
-
-
-                using PuppeteerSharp.IPage page = await browser.NewPageAsync();
+                IPage page = await browser.NewPageAsync();
                 await page.GoToAsync(_pageURL);
-                //await page.ScreenshotAsync("Screenshot.jpg", new ScreenshotOptions { FullPage = true, Quality = 100 });
 
-
-                IElementHandle[] listings = await page.QuerySelectorAllAsync(".detail-box");
-                foreach (IElementHandle? item in listings)
-                {
-
-                    IJSHandle innerTextHandle = await item.GetPropertyAsync("innerText");
-                    object innerText = await innerTextHandle.JsonValueAsync();
-                    Console.WriteLine(innerText);
-                }
-
-
-
-                await browser.CloseAsync();
-
+                return page;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"There was an error getting data from the web: {ex.Message}");
+                Console.Error.WriteLine($"There was an error initializing the page: {ex.Message}");
                 throw;
             }
-
-            //await page.WaitForSelectorAsync("div.main-content");
-
-
-
         }
+
         private static async Task ClickLinkWithSelectorAndWaitForSelector(Page page, string linkSelector, string waitForSelector)
         {
             await page.ClickAsync(linkSelector);
@@ -64,4 +41,3 @@ namespace RegalAuctionsWebCrawler.Helpers
         }
     }
 }
-
