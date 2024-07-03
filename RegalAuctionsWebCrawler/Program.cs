@@ -47,12 +47,8 @@ namespace RegalAuctionsWebCrawler
             ListingExtractor extractor = new();
 
             IPage page = await scraper.InitializeAsync();
-            List<ListingModel> listingDetails = await extractor.GetListingDetailsAsync(page);
+            List<ListingModel> listingDetails = await extractor.GetAllListingDetailsAsync(page);
 
-            //foreach (string detail in listingDetails)
-            //{
-            //    Console.WriteLine(detail);
-            //}
 
             await page.Browser.CloseAsync(); // Ensure the browser is closed after use
             host.Run();

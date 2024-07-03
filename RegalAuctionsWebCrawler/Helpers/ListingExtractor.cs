@@ -5,7 +5,7 @@ namespace RegalAuctionsWebCrawler.Helpers
 {
     public class ListingExtractor
     {
-        public async Task<List<ListingModel>> GetListingDetailsAsync(IPage page)
+        public async Task<List<ListingModel>> GetAllListingDetailsAsync(IPage page)
         {
             List<ListingModel> details = [];
 
