@@ -17,7 +17,9 @@ public static class UrlHelper
         List<BaseModel>? engines = null,
         List<BaseModel>? drivelines = null,
         List<BaseModel>? fuelTypes = null,
-        List<BaseModel>? seats = null)
+        List<BaseModel>? seats = null,
+        ReserveRangeModel? reserveRange = null
+        )
     {
         string url = string.Format(BaseUrl, unitsPerPage, page);
         NameValueCollection queryParameters = HttpUtility.ParseQueryString(string.Empty);
@@ -34,8 +36,27 @@ public static class UrlHelper
             queryParameters["search[odometer][max]"] = odometerRange.MaxOdometer.ToString();
         }
 
+
+        if (reserveRange != null)
+        {
+            queryParameters["search[reserve][min]"] = reserveRange.MinReserve.ToString();
+            queryParameters["search[reserve][max]"] = reserveRange.MaxReserve.ToString();
+
+            if (reserveRange.UnReservedOnly.HasValue)
+            {
+                queryParameters["search[reserve][unreserved]"] = reserveRange.UnReservedOnly.Value ? "true" : "false";
+            }
+            // Apply the transformation logic for minSlider and maxSlider values and round to the nearest whole number
+            queryParameters["search[reserve][minSlider]"] = Math.Round(TransformSliderValue(reserveRange.MinReserve)).ToString();
+            queryParameters["search[reserve][maxSlider]"] = Math.Round(TransformSliderValue(reserveRange.MaxReserve)).ToString();
+
+            //// Assuming the minSlider and maxSlider values are calculated by multiplying by 2.5 as shown in the jQuery code
+            //queryParameters["search[reserve][minSlider]"] = (reserveRange.MinReserve * 2.5).ToString();
+            //queryParameters["search[reserve][maxSlider]"] = (reserveRange.MaxReserve * 2.5).ToString();
+        }
+
         AddListToQueryParameters(queryParameters, "unit_type", unitTypes);
-        //AddListToQueryParameters(queryParameters, "make", makes);
+        AddListToQueryParameters(queryParameters, "make", makes);
         AddListToQueryParameters(queryParameters, "transmission", transmissions);
         AddListToQueryParameters(queryParameters, "engine", engines);
         AddListToQueryParameters(queryParameters, "driveline", drivelines);
@@ -67,4 +88,16 @@ public static class UrlHelper
         uriBuilder.Query = query.ToString();
         return uriBuilder.ToString();
     }
+    private static double TransformSliderValue(double value)
+    {
+        // No idea how regal auctions calculates the slider values, but chatGPT got it right with this function
+        // Use a custom transformation function based on the given examples
+        // Example: Piecewise function to approximate the behavior
+        return value <= 1000 ? value * 2.5 : value <= 5000 ? value * 4.8 : value <= 10000 ? value * 5 : value * 5.1;
+    }
+    //private static double TransformSliderValue(double value)
+    //{
+    //    // Use a transformation function based on the given examples
+    //    return 5000 + (3000 * Math.Log(value + 1));
+    //}
 }
