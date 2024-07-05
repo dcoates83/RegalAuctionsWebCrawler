@@ -34,10 +34,6 @@ namespace RegalAuctionsWebCrawler.Helpers
             }
         }
 
-        private static async Task ClickLinkWithSelectorAndWaitForSelector(Page page, string linkSelector, string waitForSelector)
-        {
-            await page.ClickAsync(linkSelector);
-            await page.WaitForSelectorAsync($"{waitForSelector}");
-        }
+
     }
 }

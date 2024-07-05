@@ -1,21 +1,22 @@
+using RegalAuctionsWebCrawler.Helpers;
+
 namespace RegalAuctionsWebCrawler
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+            CreateHostBuilder(args).Build().Run();
+        }
 
-            builder.Services.AddHostedService<Worker>();
-            //builder.Services.AddSingleton<PageScraper>();
-            //builder.Services.AddSingleton<ListingExtractor>();
-            //builder.Services.AddSingleton<Emailer>();
-
-
-            IHost host = builder.Build();
-
-            host.Run();
-
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddSingleton<ListingExtractor>();
+                    services.AddHostedService<Worker>();
+                });
         }
     }
 }
