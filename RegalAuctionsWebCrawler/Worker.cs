@@ -13,14 +13,13 @@ namespace RegalAuctionsWebCrawler
         private readonly ListingExtractor _extractor;
         private readonly string url = "https://www.regalauctions.com/inventory";
 
-        public Worker(ILogger<Worker> logger, ListingExtractor extractor)
+        public Worker(ILogger<Worker> logger, ListingExtractor extractor, Emailer emailer)
         {
             _logger = logger;
             _extractor = extractor;
-            _emailer = new Emailer(
-                    "test@gmail.com", "password", "receiverEmail@gmail.com"
-            );
+            _emailer = emailer;
             _interval = new TimeSpan(24, 0, 0);
+
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -30,10 +29,9 @@ namespace RegalAuctionsWebCrawler
 
                 //Initialize the scraper with the target URL
                 //YearRangeModel yearRange = YearRangeModelFactory.GetYearRangeModel(1980, 2024);
-                OdometerRangeModel odometerRange = OdometerRangeModelFactory.GetOdometerRangeModel(0, 19000);
+                OdometerRangeModel odometerRange = OdometerRangeModelFactory.GetOdometerRangeModel(0, 190_000);
                 ReserveRangeModel reserveRange = ReserveModelFactory.GetReserveRangeModel(0, 6500, null);
                 List<BaseModel> unitTypes = UnitTypeModelFactory.GetUnitTypeModels();
-
                 List<BaseModel> carsAndSUVs = unitTypes.Where(x => x.Label is "Car" or "Sport Utility").ToList();
 
 
@@ -50,9 +48,9 @@ namespace RegalAuctionsWebCrawler
                     unitsPerPage: 100,
                     page: 1,
                     //yearRange: yearRange,
-                    //odometerRange: odometerRange,
-                    reserveRange: reserveRange
-                    //unitTypes: carsAndSUVs,
+                    odometerRange: odometerRange,
+                    reserveRange: reserveRange,
+                    unitTypes: carsAndSUVs
                     //makes: makes,
                     //transmissions: transmissions
                     //engines: engines,
@@ -71,12 +69,24 @@ namespace RegalAuctionsWebCrawler
 
                     // Extract listing details
                     List<ListingModel> listingDetails = await _extractor.GetAllListingDetailsAsync(page);
+                    string[] otherFilter = { "REPAIR", "TRANSMISSION", "ROUGH", "NOISE", "RUSTED", "ENGINE", "TOW" };
 
-                    // Log or process listing details as needed
-                    foreach (ListingModel listing in listingDetails)
-                    {
-                        _logger.LogInformation($"Listing found: {listing.Title}");
-                    }
+                    //string[] titleFilter = { "HATCHBACK" };
+
+                    List<ListingModel> filteredList = _extractor.FilterListingsByOther(otherFilter, listingDetails);
+
+                    // Generate HTML table
+                    HtmlTableBuilder builder = new();
+                    string htmlTable = builder.BuildTable(filteredList);
+
+
+
+
+
+                    // Send email with the HTML table
+                    _emailer.SendEmail("Regal Auctions Listings", htmlTable);
+
+
 
                     // Close the browser after use
                     await page.Browser.CloseAsync();

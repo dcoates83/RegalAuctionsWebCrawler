@@ -11,6 +11,7 @@
         public required string Options { get; set; }
         public required string URL { get; set; }
         public required string ImageURL { get; set; }
+        public string? Other { get; set; }
 
     }
 }

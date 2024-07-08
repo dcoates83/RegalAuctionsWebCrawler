@@ -1,42 +1,53 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace RegalAuctionsWebCrawler.Helpers
+public class Emailer
 {
-    internal class Emailer
-    {
-        public string SenderEmail { get; set; }
-        public string SenderPassword { get; set; }
-        public string ReceiverEmail { get; set; }
+    private readonly string _senderEmail;
+    private readonly string _password;
+    private readonly string _recipientEmail;
+    private readonly List<string> _ccEmails;
 
-        public Emailer(string senderEmail, string senderPassword, string receiverEmail)
+    public Emailer(string senderEmail, string password, string recipientEmail, List<string> ccEmails)
+    {
+        _senderEmail = senderEmail;
+        _password = password;
+        _recipientEmail = recipientEmail;
+        _ccEmails = ccEmails;
+    }
+
+    public void SendEmail(string subject, string body)
+    {
+        MailMessage mail = new();
+        using SmtpClient smtp = new("smtp.gmail.com", 587);
+
+        mail.From = new MailAddress(_senderEmail);
+        mail.To.Add(_recipientEmail);
+        if (_ccEmails != null && _ccEmails.Count > 0)
         {
-            SenderEmail = senderEmail;
-            SenderPassword = senderPassword;
-            ReceiverEmail = receiverEmail;
+            foreach (string ccEmail in _ccEmails)
+            {
+                mail.CC.Add(ccEmail);
+            }
         }
 
-        public void SendEmail(string subject, string body)
+
+
+        mail.Subject = subject;
+        mail.Body = body;
+        mail.IsBodyHtml = true;
+
+
+        smtp.Credentials = new NetworkCredential(_senderEmail, _password);
+        smtp.EnableSsl = true;
+
+        try
         {
-            using MailMessage email = new();
-            email.From = new MailAddress(SenderEmail);
-            email.To.Add(ReceiverEmail);
-            email.Subject = subject;
-            email.Body = body;
-            email.IsBodyHtml = true;
-
-            using SmtpClient smtp = new("smtp.gmail.com", 587);
-            smtp.Credentials = new NetworkCredential(SenderEmail, SenderPassword);
-            smtp.EnableSsl = true;
-
-            try
-            {
-                smtp.Send(email);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending email: {ex.Message}");
-            }
+            smtp.Send(mail);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending email: {ex.Message}");
         }
     }
 }

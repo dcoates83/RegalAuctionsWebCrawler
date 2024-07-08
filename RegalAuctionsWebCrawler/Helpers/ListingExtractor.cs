@@ -21,6 +21,7 @@ namespace RegalAuctionsWebCrawler.Helpers
                 string initialSaleDate = await GetValueFromLabel(item, "Sale Date:");
                 string lotNumber = await GetValueFromLabel(item, "Lot#:");
                 string seller = await GetValueFromLabel(item, "Seller:");
+                string other = await GetValueFromLabel(item, "Other:");
 
                 DateTime saleDate = ParseSaleDate(initialSaleDate);
 
@@ -35,7 +36,8 @@ namespace RegalAuctionsWebCrawler.Helpers
                     Seller = seller,
                     Options = options,
                     URL = URL,
-                    ImageURL = thumbnailURL
+                    ImageURL = thumbnailURL,
+                    Other = other
                 };
 
 
@@ -44,6 +46,67 @@ namespace RegalAuctionsWebCrawler.Helpers
 
             return details;
         }
+        public List<ListingModel> FilterListingsByOther(string[] filterStrings, List<ListingModel> listings)
+        {
+            List<ListingModel> filteredListings = [];
+
+            foreach (ListingModel listing in listings)
+            {
+                bool addListing = true;
+
+                if (listing.Other != null)
+                {
+                    foreach (string filter in filterStrings)
+                    {
+                        // make both filter and listing other lowercase to make the comparison case-insensitive
+                        if (listing.Other.ToLower().Contains(filter.ToLower()))
+                        {
+                            addListing = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (addListing)
+                {
+                    filteredListings.Add(listing);
+                }
+            }
+
+            return filteredListings;
+        }
+        public List<ListingModel> FilterListingsByTitle(string[] filterStrings, List<ListingModel> listings)
+        {
+            List<ListingModel> filteredListings = [];
+
+            foreach (ListingModel listing in listings)
+            {
+                bool addListing = true;
+
+                if (listing.Title != null)
+                {
+                    foreach (string filter in filterStrings)
+                    {
+                        // make both filter and listing other lowercase to make the comparison case-insensitive
+                        if (listing.Title.ToLower().Contains(filter.ToLower()))
+                        {
+                            addListing = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (addListing)
+                {
+                    filteredListings.Add(listing);
+                }
+            }
+
+            return filteredListings;
+        }
+
+
+
         private async Task<string> GetInnerText(string selector, IElementHandle? item)
         {
             if (item == null)

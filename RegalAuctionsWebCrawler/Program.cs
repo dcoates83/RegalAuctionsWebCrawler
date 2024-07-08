@@ -1,22 +1,33 @@
+using Microsoft.Extensions.Options;
+using RegalAuctionsWebCrawler;
 using RegalAuctionsWebCrawler.Helpers;
+using RegalAuctionsWebCrawler.Models;
 
-namespace RegalAuctionsWebCrawler
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+        CreateHostBuilder(args).Build().Run();
+    }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
+    public static IHostBuilder CreateHostBuilder(string[] args)
+    {
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices((hostContext, services) =>
+            {
+                IConfiguration configuration = hostContext.Configuration;
+
+                services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+                services.AddSingleton<Emailer>(provider =>
                 {
-                    services.AddSingleton<ListingExtractor>();
-                    services.AddHostedService<Worker>();
+                    EmailSettings emailSettings = provider.GetRequiredService<IOptions<EmailSettings>>().Value;
+                    return new Emailer(emailSettings.SenderEmail, emailSettings.Password, emailSettings.RecipientEmail, emailSettings.CcEmails);
                 });
-        }
+
+                services.AddHostedService<Worker>();
+                services.AddSingleton<ListingExtractor>();
+
+            });
     }
 }

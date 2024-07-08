@@ -46,13 +46,11 @@ public static class UrlHelper
             {
                 queryParameters["search[reserve][unreserved]"] = reserveRange.UnReservedOnly.Value ? "true" : "false";
             }
+
             // Apply the transformation logic for minSlider and maxSlider values and round to the nearest whole number
             queryParameters["search[reserve][minSlider]"] = Math.Round(TransformSliderValue(reserveRange.MinReserve)).ToString();
             queryParameters["search[reserve][maxSlider]"] = Math.Round(TransformSliderValue(reserveRange.MaxReserve)).ToString();
 
-            //// Assuming the minSlider and maxSlider values are calculated by multiplying by 2.5 as shown in the jQuery code
-            //queryParameters["search[reserve][minSlider]"] = (reserveRange.MinReserve * 2.5).ToString();
-            //queryParameters["search[reserve][maxSlider]"] = (reserveRange.MaxReserve * 2.5).ToString();
         }
 
         AddListToQueryParameters(queryParameters, "unit_type", unitTypes);
@@ -91,13 +89,7 @@ public static class UrlHelper
     private static double TransformSliderValue(double value)
     {
         // No idea how regal auctions calculates the slider values, but chatGPT got it right with this function
-        // Use a custom transformation function based on the given examples
-        // Example: Piecewise function to approximate the behavior
         return value <= 1000 ? value * 2.5 : value <= 5000 ? value * 4.8 : value <= 10000 ? value * 5 : value * 5.1;
     }
-    //private static double TransformSliderValue(double value)
-    //{
-    //    // Use a transformation function based on the given examples
-    //    return 5000 + (3000 * Math.Log(value + 1));
-    //}
+
 }
