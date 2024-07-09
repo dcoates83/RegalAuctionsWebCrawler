@@ -13,6 +13,7 @@ public class Program
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
         return Host.CreateDefaultBuilder(args)
+            .UseWindowsService() // This line makes the application run as a Windows service
             .ConfigureServices((hostContext, services) =>
             {
                 IConfiguration configuration = hostContext.Configuration;
@@ -27,7 +28,7 @@ public class Program
 
                 services.AddHostedService<Worker>();
                 services.AddSingleton<ListingExtractor>();
-
+                services.AddSingleton<QualityListingExtractor>();
             });
     }
 }

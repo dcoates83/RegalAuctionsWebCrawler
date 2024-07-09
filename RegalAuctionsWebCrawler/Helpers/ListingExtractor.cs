@@ -1,5 +1,6 @@
 ﻿using PuppeteerSharp;
 using RegalAuctionsWebCrawler.Models;
+using System.Text.RegularExpressions;
 
 namespace RegalAuctionsWebCrawler.Helpers
 {
@@ -25,6 +26,9 @@ namespace RegalAuctionsWebCrawler.Helpers
 
                 DateTime saleDate = ParseSaleDate(initialSaleDate);
 
+                // Clean up options and other fields
+                options = CleanUpField(options, "Options:");
+                other = CleanUpField(other, "Other:");
 
                 ListingModel listing = new()
                 {
@@ -40,12 +44,12 @@ namespace RegalAuctionsWebCrawler.Helpers
                     Other = other
                 };
 
-
                 details.Add(listing);
             }
 
             return details;
         }
+
         public List<ListingModel> FilterListingsByOther(string[] filterStrings, List<ListingModel> listings)
         {
             List<ListingModel> filteredListings = [];
@@ -75,6 +79,7 @@ namespace RegalAuctionsWebCrawler.Helpers
 
             return filteredListings;
         }
+
         public List<ListingModel> FilterListingsByTitle(string[] filterStrings, List<ListingModel> listings)
         {
             List<ListingModel> filteredListings = [];
@@ -105,8 +110,6 @@ namespace RegalAuctionsWebCrawler.Helpers
             return filteredListings;
         }
 
-
-
         private async Task<string> GetInnerText(string selector, IElementHandle? item)
         {
             if (item == null)
@@ -121,7 +124,6 @@ namespace RegalAuctionsWebCrawler.Helpers
             IJSHandle innerTextHandle = await result.GetPropertyAsync("innerText");
             string innerText = (string)await innerTextHandle.JsonValueAsync();
             return innerText;
-
         }
 
         private async Task<string> GetURL(IElementHandle item)
@@ -135,6 +137,7 @@ namespace RegalAuctionsWebCrawler.Helpers
             string url = (string)await urlHandle.JsonValueAsync();
             return url;
         }
+
         private async Task<string> GetThumbnailUrl(IElementHandle item)
         {
             IElementHandle thumbnail = await item.QuerySelectorAsync(".thumbnail");
@@ -164,13 +167,24 @@ namespace RegalAuctionsWebCrawler.Helpers
         private DateTime ParseSaleDate(string saleDate)
         {
             // Remove ordinal suffixes and parse the date
-            string cleanedDate = System.Text.RegularExpressions.Regex.Replace(saleDate, @"(\d+)(st|nd|rd|th)", "$1");
+            string cleanedDate = Regex.Replace(saleDate, @"(\d+)(st|nd|rd|th)", "$1");
             if (DateTime.TryParseExact(cleanedDate, "MMM d", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
             {
                 // Assuming the year is the current year as the date string does not include it
                 parsedDate = parsedDate.AddYears(DateTime.Now.Year - parsedDate.Year);
             }
             return parsedDate;
+        }
+
+        private string CleanUpField(string field, string label)
+        {
+            if (string.IsNullOrEmpty(field))
+            {
+                return field;
+            }
+
+            // Remove the label if it exists
+            return field.Replace(label, "").Trim();
         }
     }
 }
