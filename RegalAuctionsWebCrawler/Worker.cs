@@ -12,7 +12,7 @@ namespace RegalAuctionsWebCrawler
         private PageScraper _qualityScraper;
         private readonly ListingExtractor _auctionExtractor;
         private readonly QualityListingExtractor _qualityListingExtractor;
-        private readonly string _auctionUrl = "https://www.regalauctions.com/inventory";
+        private readonly string _rootAuctionUrl = "https://www.regalauctions.com/inventory";
         private readonly string _qualityBaseUrl = "https://www.dashboard-light.com/reports/";
         private readonly List<MakeModel> _makeModels;
         private readonly List<ListingModel> _previousListings;
@@ -28,8 +28,10 @@ namespace RegalAuctionsWebCrawler
             _previousListings = [];
         }
 
+        [Obsolete]
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            //ExecuteDailyTask().GetAwaiter().GetResult();
             ScheduleDailyTask(20, 0); // Schedule to run at 8 PM every day
             return Task.CompletedTask;
         }
@@ -72,7 +74,7 @@ namespace RegalAuctionsWebCrawler
                 transmissions: transmissions
             );
 
-            _auctionScraper = new PageScraper(_auctionUrl);
+            _auctionScraper = new PageScraper(auctionUrl);
             _qualityScraper = new PageScraper(_qualityBaseUrl);
 
             try
