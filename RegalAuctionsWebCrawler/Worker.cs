@@ -29,11 +29,28 @@ namespace RegalAuctionsWebCrawler
         }
 
         [Obsolete]
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            try
+            {
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    ExecuteDailyTask().GetAwaiter().GetResult();
+
+                    await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
+                }
+            }
+
+            catch (Exception ex)
+            {
+                _emailer.SendEmail("Regal Auctions Web Crawler Error", ex.Message);
+
+
+                Environment.Exit(1);
+            }
             //ExecuteDailyTask().GetAwaiter().GetResult();
-            ScheduleDailyTask(20, 0); // Schedule to run at 8 PM every day
-            return Task.CompletedTask;
+            ////ScheduleDailyTask(20, 0); // Schedule to run at 8 PM every day
+            //return Task.CompletedTask;
         }
 
         [Obsolete]
